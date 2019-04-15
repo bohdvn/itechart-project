@@ -14,7 +14,31 @@ public class Number {
     private String type;
     private String comment;
 
+    public String getFullPhone() {
+        return  countryCode + " "+ operatorCode + " " + number;
+    }
+
+    @Override
+    public String toString() {
+        return  countryCode + " "+ operatorCode + " " + number;
+    }
+
     public Number() {
+    }
+
+    public Number(Integer id, Integer contactId) {
+        this.id = id;
+        this.contactId = contactId;
+    }
+
+    public Number(Integer id, Integer contactId, String countryCode, String operatorCode, String number, String type, String comment) {
+        this.id = id;
+        this.contactId = contactId;
+        this.countryCode = countryCode;
+        this.operatorCode = operatorCode;
+        this.number = number;
+        this.type = type;
+        this.comment = comment;
     }
 
     public Integer getId() {

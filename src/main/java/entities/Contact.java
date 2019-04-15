@@ -21,6 +21,15 @@ public class Contact {
     private String city;
     private String address;
     private String zipCode;
+    private String base64Image = null;
+
+    public String getBase64Image() {
+        return base64Image;
+    }
+
+    public void setBase64Image(String base64Image) {
+        this.base64Image = base64Image;
+    }
 
     public Contact(Integer id, String name, String surname, String patronymic, String dateOfBirth, String gender, String nationality, String maritalStatus, String webSite, String email, String workPlace, String country, String city, String address, String zipCode) {
         this.id = id;

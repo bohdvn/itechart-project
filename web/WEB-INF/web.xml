@@ -25,6 +25,82 @@
     </servlet-mapping>
 
 
+    <servlet>
+        <servlet-name>EmailSendingServlet</servlet-name>
+        <servlet-class>servlets.EmailSendingServlet</servlet-class>
+    </servlet>
 
+    <servlet-mapping>
+        <servlet-name>EmailSendingServlet</servlet-name>
+        <url-pattern>/sendingEmail</url-pattern>
+    </servlet-mapping>
+
+    <context-param>
+        <param-name>host</param-name>
+        <param-value>smtp.gmail.com</param-value>
+    </context-param>
+
+    <context-param>
+        <param-name>port</param-name>
+        <param-value>587</param-value>
+    </context-param>
+
+    <context-param>
+        <param-name>user</param-name>
+        <param-value>cntctapp@gmail.com</param-value>
+    </context-param>
+
+    <context-param>
+        <param-name>pass</param-name>
+        <param-value>itechart2019</param-value>
+    </context-param>
+
+
+
+    <context-param>
+        <param-name>quartz:shutdown-on-unload</param-name>
+        <param-value>true</param-value>
+    </context-param>
+    <context-param>
+        <param-name>quartz:wait-on-shutdown</param-name>
+        <param-value>true</param-value>
+    </context-param>
+    <context-param>
+        <param-name>quartz:start-on-load</param-name>
+        <param-value>true</param-value>
+    </context-param>
+
+    <listener>
+        <listener-class>org.quartz.ee.servlet.QuartzInitializerListener</listener-class>
+    </listener>
+
+    <listener>
+        <listener-class>servlets.QuartzListener</listener-class>
+    </listener>
+
+    <!--<context-param>-->
+        <!--<param-name>quartz:config-file</param-name>-->
+        <!--<param-value>quartz.properties</param-value>-->
+    <!--</context-param>-->
+    <!--<context-param>-->
+        <!--<param-name>quartz:shutdown-on-unload</param-name>-->
+        <!--<param-value>true</param-value>-->
+    <!--</context-param>-->
+    <!--<context-param>-->
+        <!--<param-name>quartz:wait-on-shutdown</param-name>-->
+        <!--<param-value>true</param-value>-->
+    <!--</context-param>-->
+    <!--<context-param>-->
+        <!--<param-name>quartz:start-on-load</param-name>-->
+        <!--<param-value>true</param-value>-->
+    <!--</context-param>-->
+    <!---->
+    <!--<listener>-->
+        <!--<listener-class>org.quartz.ee.servlet.QuartzInitializerListener</listener-class>-->
+    <!--</listener>-->
+
+    <!--<listener>-->
+        <!--<listener-class>servlets.QuartzListener</listener-class>-->
+    <!--</listener>-->
 
 </web-app>

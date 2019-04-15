@@ -5,10 +5,17 @@ import java.util.Objects;
 public class Attachment {
     private Integer id;
     private Integer contactId;
-    private String countryCode;
     private String name;
     private String date;
     private String comment;
+
+    public Attachment(Integer id, Integer contactId, String name, String date, String comment) {
+        this.id = id;
+        this.contactId = contactId;
+        this.name = name;
+        this.date = date;
+        this.comment = comment;
+    }
 
     public Attachment() {
     }
@@ -27,14 +34,6 @@ public class Attachment {
 
     public void setContactId(Integer contactId) {
         this.contactId = contactId;
-    }
-
-    public String getCountryCode() {
-        return countryCode;
-    }
-
-    public void setCountryCode(String countryCode) {
-        this.countryCode = countryCode;
     }
 
     public String getName() {
@@ -68,7 +67,6 @@ public class Attachment {
         Attachment that = (Attachment) o;
         return id.equals(that.id) &&
                 contactId.equals(that.contactId) &&
-                countryCode.equals(that.countryCode) &&
                 name.equals(that.name) &&
                 date.equals(that.date) &&
                 Objects.equals(comment, that.comment);
@@ -76,6 +74,6 @@ public class Attachment {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, contactId, countryCode, name, date, comment);
+        return Objects.hash(id, contactId, name, date, comment);
     }
 }
