@@ -34,12 +34,18 @@ var photoService = {
             alert("Please, fill required fields");
             return false;
         }
+        var file = form.photo.files[0];
+        if(file != undefined && file.size > 1024* 1024) {
+            alert("Too big image! Maximum size of image is 1 MB");
+            return false;
+        }
+
         openbox(this.popUp);
 
 
         var files = document.getElementById('photo').files;
         if (files.length > 0) {
-            getBase64(files[0]);
+            getBase64Image(files[0]);
         }
         form.reset();
     },
@@ -57,7 +63,7 @@ var photoService = {
     }
 };
 
-function getBase64(file) {
+function getBase64Image(file) {
     var reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = function () {
@@ -178,7 +184,21 @@ var phoneService = {
     }
 };
 
+function encodeFile() {
+    var preview = document.getElementById('file64');
+    var file    = document.getElementById('file').files[0];
+    var reader  = new FileReader();
 
+    reader.onloadend = function () {
+        preview.value = reader.result;
+    }
+
+    if (file) {
+        reader.readAsDataURL(file);
+    } else {
+        preview.value = "";
+    }
+}
 
 var attachService = {
     pos : 0,
@@ -187,16 +207,25 @@ var attachService = {
 
     saveAttach: function () {
         "use strict";
-        var form= document.getElementById("attach");
-        if (!(form.name.value && form.commentAtt.value )) {
+        var form = document.getElementById("attach");
+        if (!form.name.value) {
             alert("Please, fill required fields");
+            return false;
+        }
+        if (!form.file.value) {
+            alert("Please, fill required fields");
+            return false;
+        }
+        var file = form.file.files[0];
+        if(file != undefined && file.size > 1024* 1024) {
+            alert("Too big file! Maximum size of file is 1 MB");
             return false;
         }
         openbox(this.popUp);
 
         var table = document.getElementById("attachTable");
 
-        var i, row,cell1, cell2, cell3, cell4;
+        var i, row,cell1, cell2, cell3, cell4, cell5;
 
         if (this.mode == 0) {
             i = table.rows.length;
@@ -205,6 +234,7 @@ var attachService = {
             cell2 = row.insertCell(1);
             cell3 = row.insertCell(2);
             cell4 = row.insertCell(3);
+            cell5 = row.insertCell(4);
         }  else {
             i = this.pos;
             row = table.rows[i];
@@ -212,6 +242,7 @@ var attachService = {
             cell2 = row.cells[1];
             cell3 = row.cells[2];
             cell4 = row.cells[3];
+            cell5 = row.cells[4];
         }
 
         function format(date) {
@@ -224,10 +255,13 @@ var attachService = {
         var today = new Date();
         var dateString = format(today);
 
+        var res = document.getElementById("file64").value;
+
         cell1.innerHTML = "<input type='checkbox'  name='attachments'/>";
-        cell2.innerHTML ="<input type='text' form='form' name='name"+i+"' value='"+form.name.value+"' readonly/>";
+        cell2.innerHTML ="<a id='file64a' href='"+res+"' target='_blank\'><input type='text' form='form' name='name"+i+"' value='"+form.name.value+"' readonly/></a>";
         cell3.innerHTML ="<input type='text' form='form' name='commentAtt"+i+"' value='"+form.commentAtt.value+"' readonly/>";
-        cell4.innerHTML ="<input type='text' form='form' name='date"+i+"' value='"+dateString+"' />";
+        cell4.innerHTML ="<input type='text' form='form' name='date"+i+"' value='"+dateString+"' readonly/>";
+        cell5.innerHTML ="<input type='hidden' form='form' name='base64File"+i+"' value='"+res+"' readonly/>";
         form.reset();
     },
 
@@ -241,26 +275,6 @@ var attachService = {
                 table.deleteRow(i);
             }
         }
-    },
-
-    editAttach: function () {
-        "use strict";
-        var form= document.getElementById("attach");
-        var table = document.getElementById("attachTable");
-        var checkboxes = document.getElementsByName('attachments'), length = checkboxes.length;
-
-        for (var i=0; i<length; i++) {
-            if (checkboxes[i].checked) {
-                var row = table.rows[i];
-                form.name.value = row.cells[1].childNodes[0].value;
-                form.commentAtt.value = row.cells[2].childNodes[0].value;
-                this.pos = i;
-                this.mode = 1;
-                openbox(this.popUp);
-                break;
-            }
-        }
-
     },
 
     addAttach: function () {

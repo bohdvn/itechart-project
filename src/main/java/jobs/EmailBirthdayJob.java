@@ -2,6 +2,7 @@ package jobs;
 
 import DAO.ContactDAO;
 import entities.Contact;
+import org.apache.log4j.Logger;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import utility.EmailUtility;
@@ -18,6 +19,7 @@ import static java.util.Calendar.*;
 
 public class EmailBirthdayJob implements Job {
 
+    private static Logger logger = Logger.getLogger(EmailBirthdayJob.class);
     @Override
     public void execute(JobExecutionContext arg0) {
         EmailUtility emailUtility = new EmailUtility();
@@ -27,28 +29,34 @@ public class EmailBirthdayJob implements Job {
 
         ContactDAO contactDAO = new ContactDAO(jdbcURL, jdbcUsername, jdbcPassword);
 
-        List<Contact> admin = new ArrayList<>();
-
         List<Contact> contacts = null;
         try {
             contacts = contactDAO.getContactsWithBirthday();
         } catch (SQLException e) {
+            logger.error("EmailBirthdayJob failed ", e);
             e.printStackTrace();
         } catch (IOException e) {
+            logger.error("EmailBirthdayJob failed ", e);
             e.printStackTrace();
         }
         if (contacts.size()!=0) {
             String message = null;
+            logger.info(contacts.size() + " contacts have birthday today");
             try {
                 message = createNotificationMessage(contacts);
             } catch (ParseException e) {
+                logger.error("EmailBirthdayJob failed ", e);
                 e.printStackTrace();
             }
             try {
                 emailUtility.sendEmail("smtp.gmail.com", "587", "cntctapp@gmail.com", "itechart2019", "gunnerinho@gmail.com", "Birthday notification", message);
             } catch (MessagingException e) {
+                logger.error("EmailBirthdayJob failed ", e);
                 e.printStackTrace();
             }
+        }
+        else {
+            logger.info("Nobody has a birthday today.");
         }
 
     }

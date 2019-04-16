@@ -1,33 +1,24 @@
 package servlets;
 
 import DAO.ContactDAO;
-import com.mysql.cj.x.protobuf.MysqlxDatatypes;
-import com.oracle.tools.packager.IOUtils;
 import entities.Attachment;
 import entities.Contact;
 import entities.Number;
 import entities.SearchData;
-import org.apache.commons.codec.binary.Base64;
 import utility.SaveUtility;
 
-import javax.persistence.criteria.CriteriaBuilder;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.apache.log4j.Logger;
+import org.apache.log4j.LogManager;
 
 /**
  * ControllerServlet.java
@@ -35,7 +26,7 @@ import java.util.regex.Pattern;
  * requests from the user.
  */
 
-@MultipartConfig(maxFileSize = 8088608)
+@MultipartConfig(maxFileSize = 8088608*2)
 public class ControllerServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private ContactDAO contactDAO;
@@ -86,9 +77,6 @@ public class ControllerServlet extends HttpServlet {
                 case "/editPhoto":
                     showFormPhoto(request, response);
                     break;
-                case "/updatePhoto":
-                    updatePhoto(request, response);
-                    break;
                 case "/email":
                     showEmailForm(request,response);
                     break;
@@ -104,6 +92,8 @@ public class ControllerServlet extends HttpServlet {
         }
     }
 
+    private Logger logger = LogManager.getLogger(ControllerServlet.class);
+
     private void listActions(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException {
         if (request.getParameter("DeleteSelected") != null) {
@@ -116,6 +106,7 @@ public class ControllerServlet extends HttpServlet {
                     contactDAO.deleteContact(contact);
                 }
             }
+            logger.info("Selected contacts deleted");
             response.sendRedirect("list");
         } else if (request.getParameter("EmailSelected") != null) {
             // Invoke SecondServlet's job here.
@@ -150,28 +141,6 @@ public class ControllerServlet extends HttpServlet {
         dispatcher.forward(request, response);
     }
 
-
-    private void updatePhoto(HttpServletRequest request, HttpServletResponse response)
-            throws SQLException, IOException, ServletException {
-        Integer id = Integer.parseInt(request.getParameter("id"));
-        Contact existingContact=contactDAO.getContact(id);
-        InputStream inputStream = null;
-        // obtains the upload file part in this multipart request
-        Part filePart = request.getPart("photo");
-        if (filePart != null) {
-
-            // obtains input stream of the upload file
-            inputStream = filePart.getInputStream();
-        }
-        byte[] imageBytes = new byte[(int)filePart.getSize()];
-        inputStream.read(imageBytes, 0, imageBytes.length);
-        inputStream.close();
-        String imageStr = Base64.encodeBase64String(imageBytes);
-        existingContact.setBase64Image(imageStr);
-        request.setAttribute("contact", existingContact);
-       getServletContext().getRequestDispatcher("edit?id="+id).forward(request, response);
-    }
-
     private void showFormPhoto(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException {
         int id = Integer.parseInt(request.getParameter("id"));
@@ -197,9 +166,9 @@ public class ControllerServlet extends HttpServlet {
         String surname = request.getParameter("surname");
         String patronymic = request.getParameter("patronymic");
         String dateAfter = request.getParameter("dateAfter");
-        if (dateAfter=="") dateAfter = null;
+        if (dateAfter.equals("")) dateAfter = null;
         String dateBefore = request.getParameter("dateBefore");
-        if (dateBefore=="") dateBefore = null;
+        if (dateBefore.equals("")) dateBefore = null;
         String gender = request.getParameter("gender");
         String nationality = request.getParameter("nationality");
         String maritalStatus = request.getParameter("maritalStatus");
@@ -270,8 +239,8 @@ public class ControllerServlet extends HttpServlet {
         String name = request.getParameter("name");
         String surname = request.getParameter("surname");
         String patronymic = request.getParameter("patronymic");
-        String dateOfBirth = request.getParameter("dateOfBirth");
-        if (dateOfBirth=="") dateOfBirth = null;
+        String dateOfBirth = null;
+        if(!request.getParameter("dateOfBirth").equals("")) dateOfBirth = request.getParameter("dateOfBirth");
         String gender = request.getParameter("gender");
         String nationality = request.getParameter("nationality");
         String maritalStatus = request.getParameter("maritalStatus");
@@ -283,6 +252,7 @@ public class ControllerServlet extends HttpServlet {
         String address = request.getParameter("address");
         String zipCode = request.getParameter("zipCode");
         String base64Image = request.getParameter("image64");
+        if (base64Image.equals("")) base64Image=null;
 
         Contact newContact = new Contact(name, surname, patronymic, dateOfBirth, gender, nationality,
                 maritalStatus, webSite, email, workPlace, country, city, address, zipCode);
@@ -299,6 +269,7 @@ public class ControllerServlet extends HttpServlet {
             contactDAO.insertAttachment(attachment);
         }
 
+        logger.info("Inserted contact: "+newContact.getName()+" "+newContact.getSurname());
         response.sendRedirect("list");
     }
 
@@ -309,7 +280,7 @@ public class ControllerServlet extends HttpServlet {
         String surname = request.getParameter("surname");
         String patronymic = request.getParameter("patronymic");
         String dateOfBirth = request.getParameter("dateOfBirth");
-        if (dateOfBirth=="") dateOfBirth = null;
+        if (dateOfBirth.equals("")) dateOfBirth = null;
         String gender = request.getParameter("gender");
         String nationality = request.getParameter("nationality");
         String maritalStatus = request.getParameter("maritalStatus");
@@ -321,6 +292,8 @@ public class ControllerServlet extends HttpServlet {
         String address = request.getParameter("address");
         String zipCode = request.getParameter("zipCode");
         String base64Image=request.getParameter("image64");
+        if (base64Image.equals("")) base64Image=null;
+
 
         Contact contact = new Contact(id, name, surname, patronymic, dateOfBirth, gender, nationality,
                 maritalStatus, webSite, email, workPlace, country, city, address, zipCode);
@@ -338,7 +311,7 @@ public class ControllerServlet extends HttpServlet {
         for(Attachment attachment : attachments) {
             contactDAO.insertAttachment(attachment);
         }
-
+        logger.info("Updated contact: "+contact.getName()+" "+contact.getSurname());
         response.sendRedirect("list");
 
     }
@@ -349,6 +322,7 @@ public class ControllerServlet extends HttpServlet {
 
         Contact contact = new Contact(id);
         contactDAO.deleteContact(contact);
+        logger.info("Deleted contact: "+contact.getName()+" "+contact.getSurname());
         response.sendRedirect("list");
 
     }

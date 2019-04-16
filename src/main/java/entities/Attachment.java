@@ -8,6 +8,16 @@ public class Attachment {
     private String name;
     private String date;
     private String comment;
+    private String base64File = null;
+
+
+    public String getBase64File() {
+        return base64File;
+    }
+
+    public void setBase64File(String base64File) {
+        this.base64File = base64File;
+    }
 
     public Attachment(Integer id, Integer contactId, String name, String date, String comment) {
         this.id = id;

@@ -42,7 +42,7 @@
                     <c:if test="${contact != null}">
                         Edit Contact
                         <c:if test="${contact.base64Image != null}">
-                            <br><img id="image" onclick="photoService.addPhoto()" src="data:image/jpg;base64,${contact.base64Image}" width="120" height="120"/>
+                            <br><img id="image" onclick="photoService.addPhoto()" src="${contact.base64Image}" width="120" height="120"/>
                         </c:if>
                         <c:if test="${contact.base64Image == null}">
                             <br><img id="image" onclick="photoService.addPhoto()" src="https://img.icons8.com/ios/1600/user-male-circle-filled.png" width="120" height="120"/>
@@ -191,8 +191,8 @@
                 <div class="form-group">
                     <label class="control-label col-sm-2" for="photo">Update photo:</label>
                     <div class="col-sm-2">
-                        <input  type="file" min="0" class="form-control" max="1000" id="photo"
-                                name="photo" placeholder="Country code">
+                        <input  type="file" min="0" class="form-control" id="photo"
+                                name="photo" accept="image/jpeg,image/png,image/gif">
                     </div>
                 </div>
             </form>
@@ -272,11 +272,21 @@
                 </div>
 
                 <div class="form-group">
+                    <label class="control-label col-sm-2" for="photo">File:</label>
+                    <div class="col-sm-2">
+                        <input  type="file" min="0" class="form-control" id="file"
+                                name="file" onchange="encodeFile()">
+                        <input type="hidden" id="file64"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
                     <label class="control-label col-sm-2" for="name">Attachment name:</label>
                     <div class="col-sm-2">
                         <input  type="text" class="form-control" id="name"
                                 name="name" placeholder="Name" required>
                     </div>
+
                 </div>
 
                 <div class="form-group">
@@ -344,7 +354,6 @@
     <div style="float: right;">
         <button onclick="attachService.addAttach()" class="btn btn-default">Add</button>
         <button onclick="attachService.deleteAttach()" class="btn btn-default">Delete</button>
-        <button onclick="attachService.editAttach()" class="btn btn-default">Edit</button>
     </div>
 
     <div class="panel-heading">
@@ -365,9 +374,10 @@
                 <td>
                     <input type='checkbox'  name='attachments'/>
                 </td>
-                <td><input type='text' form='form' name="name${ num.count - 1 }" value="${ attachment.name}" readonly/></td>
+                <td><a id="file64a" href="${ attachment.base64File}" target="_blank"><input type='text' form='form' name="name${ num.count - 1 }" value="${ attachment.name}" readonly/></a></td>
                 <td><input type='text' form='form' name="commentAtt${ num.count - 1 }" value="${ attachment.comment}" readonly/></td>
                 <td><input type='text' form='form' name="date${ num.count - 1}" value="${ attachment.date}" readonly/></td>
+                <td><input type='hidden' form='form' name="base64File${ num.count - 1}" value="${ attachment.base64File}" readonly/></td>
             </tr>
         </c:forEach>
         </tbody>

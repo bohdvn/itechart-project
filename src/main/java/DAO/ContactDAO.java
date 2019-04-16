@@ -45,7 +45,7 @@ public class ContactDAO {
 
     public int insertContact(Contact contact) throws SQLException {
         String sql = "Insert into users.Contact(Name, Surname, Patronymic, Date_of_birth, Gender, Nationality, " +
-                "Marital_status, Web_site, Email, Work_place, Country, City, Address, Zip_code, IMAGE) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                "Marital_status, Web_site, Email, Work_place, Country, City, Address, Zip_code, Image) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         connect();
 
         PreparedStatement pstm = jdbcConnection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -63,7 +63,7 @@ public class ContactDAO {
         pstm.setString(12, contact.getCity());
         pstm.setString(13, contact.getAddress());
         pstm.setString(14, contact.getZipCode());
-        pstm.setBytes(15,Base64.getDecoder().decode(contact.getBase64Image()));
+        pstm.setString(15, contact.getBase64Image());
 
         pstm.executeUpdate();
 
@@ -93,8 +93,8 @@ public class ContactDAO {
     }
 
     public boolean insertAttachment(Attachment attach) throws SQLException {
-        String sql = "Insert into users.attachment(CONTACT_ID, NAME, COMMENT, DATE ) " +
-                "values (?,?,?,?)";
+        String sql = "Insert into users.attachment(CONTACT_ID, NAME, COMMENT, DATE, FILE ) " +
+                "values (?,?,?,?,?)";
         connect();
 
         PreparedStatement pstm = jdbcConnection.prepareStatement(sql);
@@ -102,6 +102,7 @@ public class ContactDAO {
         pstm.setString(2, attach.getName());
         pstm.setString(3, attach.getComment());
         pstm.setString(4, attach.getDate());
+        pstm.setString(5, attach.getBase64File());
 
         boolean rowInserted = pstm.executeUpdate() > 0;
         pstm.close();
@@ -159,7 +160,9 @@ public class ContactDAO {
             String name = rs.getString("Name");
             String date = rs.getString("Date");
             String comment = rs.getString("Comment");
+            String base64File = rs.getString("File");
             Attachment newAttachment = new Attachment(id,contactId,name,date,comment);
+            newAttachment.setBase64File(base64File);
             listAttachment.add(newAttachment);
         }
 
@@ -259,7 +262,7 @@ public class ContactDAO {
         pstm.setString(12, contact.getCity());
         pstm.setString(13, contact.getAddress());
         pstm.setString(14, contact.getZipCode());
-        pstm.setBytes(15,Base64.getDecoder().decode(contact.getBase64Image()));
+        pstm.setString(15,contact.getBase64Image());
         pstm.setInt(16, contact.getId());
 
         boolean rowUpdated;
@@ -324,31 +327,10 @@ public class ContactDAO {
             String city = rs.getString("City");
             String address = rs.getString("Address");
             String zipCode = rs.getString("Zip_code");
-            Blob blob = rs.getBlob("Image");
-            String base64Image=null;
-            if (blob!=null) {
-
-                InputStream inputStream = blob.getBinaryStream();
-                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                byte[] buffer = new byte[4096];
-                int bytesRead = -1;
-
-                while ((bytesRead = inputStream.read(buffer)) != -1) {
-                    outputStream.write(buffer, 0, bytesRead);
-                }
-
-                byte[] imageBytes = outputStream.toByteArray();
-
-                base64Image = Base64.getEncoder().encodeToString(imageBytes);
-
-                inputStream.close();
-                outputStream.close();
-            }
+            String base64Image = rs.getString("Image");
 
             contact = new Contact(id, name, surname, patronymic, dateOfBirth, gender, nationality,
                     maritalStatus, webSite, email, workPlace, country, city, address, zipCode);
-
-
             contact.setBase64Image(base64Image);
         }
 
@@ -401,22 +383,6 @@ public class ContactDAO {
         disconnect();
 
         return listContact;
-    }
-
-    public static String encoder(String filePath) {
-        String base64File = "";
-        File file = new File(filePath);
-        try (FileInputStream imageInFile = new FileInputStream(file)) {
-            // Reading a file from file system
-            byte fileData[] = new byte[(int) file.length()];
-            imageInFile.read(fileData);
-            base64File = Base64.getEncoder().encodeToString(fileData);
-        } catch (FileNotFoundException e) {
-            System.out.println("File not found" + e);
-        } catch (IOException ioe) {
-            System.out.println("Exception while reading the file " + ioe);
-        }
-        return base64File;
     }
 
     public List<Contact> searchContact(SearchData data) throws SQLException {

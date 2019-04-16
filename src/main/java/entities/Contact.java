@@ -1,5 +1,6 @@
 package entities;
 
+import java.io.InputStream;
 import java.util.Objects;
 
 public class Contact {

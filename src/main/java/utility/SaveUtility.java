@@ -50,6 +50,7 @@ public class SaveUtility {
             attachment.setName(request.getParameter("name" + i));
             attachment.setComment(request.getParameter("commentAtt" + i));
             attachment.setDate(request.getParameter("date" + i));
+            attachment.setBase64File(request.getParameter("base64File"+i));
             if(idContact != null)
                 attachment.setContactId(idContact);
             if (attachment.getName()!=null){
