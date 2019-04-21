@@ -1,0 +1,39 @@
+#mainForm {
+    font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    font-size: 110%;
+    border-radius: 10px;
+    border-spacing: 0;
+    text-align: center;
+    border-width:1px;
+    border-color:black;
+}
+#mainForm th, #mainForm td {
+    border-style: solid;
+    border-width: 0 1px 1px 0;
+    border-color: white;
+    padding: 10px 20px;
+    background: #F8E391;
+}
+#mainForm tr:last-child td:last-child {
+    border-radius: 0 0 10px 0;
+}
+#mainForm tr:last-child td:first-child {
+    border-radius: 0 0 0 10px;
+}
+#mainForm tr:first-child th:first-child {
+    border-radius: 10px 0 0 0;
+}
+#mainForm tr:first-child td:last-child {
+    border-radius: 0 10px 0 0;
+}
+.btn {
+    background: #BCEBDD;
+    color: white;
+    font-size: 130%;
+    text-shadow: 0 1px 1px #2D2020;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+.btn:hover {
+    background: #AAABDD;
+}

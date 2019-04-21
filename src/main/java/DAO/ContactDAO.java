@@ -1,17 +1,14 @@
 package DAO;
 
-import java.io.*;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-
 import entities.Attachment;
 import entities.Contact;
-import entities.SearchData;
 import entities.Number;
+import entities.SearchData;
 
-import javax.sql.rowset.serial.SerialBlob;
+import java.io.IOException;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ContactDAO {
     private String jdbcURL;

@@ -10,16 +10,27 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <html>
 <head>
+    <style>
+        <%@include file='styles/search.css' %>
+    </style>
     <title>Contacts Application</title>
     <meta charset="utf-8">
 </head>
 <body>
-<center>
+<div style="text-align: center;">
+        <h1>Contact Management</h1>
+        <h2>
+            <a href="/new">Add New Contact</a>
+            &nbsp;&nbsp;&nbsp;
+            <a href="/list">List All Contacts</a>
+            &nbsp;&nbsp;&nbsp;
+            <a href="/search">Search</a>
+        </h2>
     <h1>Search</h1>
-</center>
+</div>
 <div align="center">
         <form action="find">
-            <table border="1" cellpadding="5">
+            <table id="mainForm" border="1" cellpadding="5">
                 <tr>
                     <th>Name: </th>
                     <td>
@@ -107,7 +118,7 @@
                 </tr>
                 <tr>
                     <td colspan="2" align="center">
-                        <input type="submit" value="Find" />
+                        <input class="btn" type="submit" value="Find" />
                     </td>
                 </tr>
             </table>

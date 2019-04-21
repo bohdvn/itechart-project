@@ -88,6 +88,7 @@ public class ControllerServlet extends HttpServlet {
                     break;
             }
         } catch (SQLException ex) {
+            logger.error(ex);
             throw new ServletException(ex);
         }
     }

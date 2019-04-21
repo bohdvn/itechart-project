@@ -18,11 +18,6 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeUtility;
 
-/**
- * A utility class for sending e-mail messages
- * @author www.codejava.net
- *
- */
 public class EmailUtility {
     private static Logger logger = LogManager.getLogger(EmailUtility.class);
     public static void sendEmail(String host, String port,
@@ -58,7 +53,7 @@ public class EmailUtility {
         }
 
         msg.setFrom(new InternetAddress(userName));
-//        InternetAddress[] toAddresses = { new InternetAddress(toAddress) };
+        //InternetAddress[] toAddresses = { new InternetAddress(toAddress) };
         String[] recipients = toAddress.split(", ");
         InternetAddress[] mailAddress_TO = new InternetAddress [recipients.length] ;
         for(int i=0;i<recipients.length;i++){

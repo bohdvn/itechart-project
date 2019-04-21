@@ -31,8 +31,8 @@
 </center>
 <div align="center">
     <form action="listActions" method="GET">
-        <input type="submit" name="DeleteSelected" value="Delete Selected">
-        <input type="submit" name="EmailSelected" value="Email Selected">
+        <input class="btn" type="submit" name="DeleteSelected" value="Delete Selected">
+        <input class="btn" type="submit" name="EmailSelected" value="Email Selected">
     <table border="1" cellpadding="5">
         <caption><h2>List of Contacts</h2></caption>
         <tr>
@@ -67,10 +67,10 @@
     <%--For displaying Page numbers. 
     The when condition does not display a link for the current page--%>
 <c:if test="${currentPage != null}">
-    <table border="1" cellpadding="5" cellspacing="5">
+    <table id="pagination" border="1" cellpadding="5" cellspacing="5">
         <tr>
             <c:if test="${currentPage != 1}">
-                <td><a href="?page=${currentPage - 1}">Previous</a></td>
+                <td><a href="/list?page=${currentPage - 1}">Previous</a></td>
             </c:if>
             <c:forEach begin="1" end="${noOfPages}" var="i">
                 <c:choose>
@@ -78,12 +78,12 @@
                         <td>${i}</td>
                     </c:when>
                     <c:otherwise>
-                        <td><a href="?page=${i}">${i}</a></td>
+                        <td><a href="/list?page=${i}">${i}</a></td>
                     </c:otherwise>
                 </c:choose>
             </c:forEach>
             <c:if test="${currentPage lt noOfPages}">
-                <td><a href="?page=${currentPage + 1}">Next</a></td>
+                <td><a href="/list?page=${currentPage + 1}">Next</a></td>
             </c:if>
         </tr>
     </table>
