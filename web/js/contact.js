@@ -212,7 +212,7 @@ var attachService = {
             alert("Please, fill required fields");
             return false;
         }
-        if (!form.file.value) {
+        if (!form.file64.value) {
             alert("Please, fill required fields");
             return false;
         }
@@ -277,8 +277,31 @@ var attachService = {
         }
     },
 
+    editAttach: function () {
+        "use strict";
+        var form = document.getElementById("attach");
+        var table = document.getElementById("attachTable");
+        var checkboxes = document.getElementsByName('attachments'), length = checkboxes.length;
+
+        for (var i=0; i<length; i++) {
+            if (checkboxes[i].checked) {
+                var row = table.rows[i];
+                form.name.value = row.cells[1].getElementsByTagName("input")[0].value;
+                form.commentAtt.value = row.cells[2].childNodes[0].value;
+                form.file64.value = row.cells[4].childNodes[0].value;
+                document.getElementById("file").style.display="none";
+                this.pos = i;
+                this.mode = 1;
+                openbox(this.popUp);
+                break;
+            }
+        }
+
+    },
+
     addAttach: function () {
         "use strict";
+        document.getElementById("file").style.display="block";
         this.mode = 0;
         openbox(this.popUp);
     },

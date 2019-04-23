@@ -37,3 +37,10 @@
 .btn:hover {
     background: #AAABDD;
 }
+
+a{
+    color: black;
+}
+a:visited{
+    color: black;
+}

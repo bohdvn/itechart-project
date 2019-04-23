@@ -1,21 +1,28 @@
 package entities;
 
-import java.io.InputStream;
+
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Contact {
-    public static final String GENDER_MALE ="M";
-    public static final String GENDER_FEMALE = "F";
+public class Contact implements Serializable {
 
     private Integer id;
+    @NotNull(message = "name can't be null")
     private String name;
+    @NotNull(message = "surname can't be null")
     private String surname;
     private String patronymic;
     private String dateOfBirth;
+    @Pattern(regexp = "^M|F$",
+            message = "incorrect gender format")
     private String gender;
     private String nationality;
     private String maritalStatus;
     private String webSite;
+    @Pattern(regexp = "^(([^<>()\\[\\]\\.,;:\\s@\\\"]+(\\.[^<>()\\[\\]\\.,;:\\s@\\\"]+)*)|(\\\".+\\\"))@(([^<>()[\\]\\.,;:\\s@\\\"]+\\.)+[^<>()[\\]\\.,;:\\s@\\\"]{2,})$",
+            message = "incorrect email format")
     private String email;
     private String workPlace;
     private String country;

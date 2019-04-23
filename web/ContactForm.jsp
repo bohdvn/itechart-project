@@ -84,6 +84,7 @@
                 <td>
                     <input type="text" name="surname" size="45"
                            value="<c:out value='${contact.surname}' />"
+                           required
                     />
                 </td>
             </tr>
@@ -605,6 +606,7 @@
     <div style="float: right;">
         <button onclick="attachService.addAttach()" class="btn">Add</button>
         <button onclick="attachService.deleteAttach()" class="btn">Delete</button>
+        <button onclick="attachService.editAttach()" class="btn">Edit</button>
     </div>
 
     <div class="panel-heading">

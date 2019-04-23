@@ -1,16 +1,22 @@
 package entities;
 
+
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Number {
-    public static final String TYPE_HOME = "HOME";
-    public static final String TYPE_MOBILE = "MOBILE";
-
+public class Number implements Serializable {
     private Integer id;
     private Integer contactId;
+    @Pattern(regexp = "^[0-9]+$", message = "only digits expected")
     private String countryCode;
+    @Pattern(regexp = "^[0-9]+$", message = "only digits expected")
     private String operatorCode;
+    @Pattern(regexp = "^[0-9]+$", message = "only digits expected")
+    @Size(min = 7, max = 7)
     private String number;
+    @Pattern(regexp = "^Home|Mobile?$", message = "incorrect type format")
     private String type;
     private String comment;
 

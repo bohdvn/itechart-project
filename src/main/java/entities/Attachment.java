@@ -1,10 +1,13 @@
 package entities;
 
+import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Attachment {
+public class Attachment implements Serializable{
     private Integer id;
     private Integer contactId;
+    @NotNull(message = "name can't be null")
     private String name;
     private String date;
     private String comment;

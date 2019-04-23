@@ -4,8 +4,9 @@ import DAO.ContactDAO;
 import entities.Attachment;
 import entities.Contact;
 import entities.Number;
-import entities.SearchData;
-import utility.SaveUtility;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+import utility.LogicUtility;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -15,10 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
-import org.apache.log4j.Logger;
-import org.apache.log4j.LogManager;
 
 /**
  * ControllerServlet.java
@@ -74,9 +72,6 @@ public class ControllerServlet extends HttpServlet {
                 case "/update":
                     updateContact(request, response);
                     break;
-                case "/editPhoto":
-                    showFormPhoto(request, response);
-                    break;
                 case "/email":
                     showEmailForm(request,response);
                     break;
@@ -100,14 +95,7 @@ public class ControllerServlet extends HttpServlet {
         if (request.getParameter("DeleteSelected") != null) {
             // Invoke FirstServlet's job here.
             String[] checkedIds = request.getParameterValues("checked");
-            if (checkedIds != null && checkedIds.length != 0) {
-                for (int i = 0; i < checkedIds.length; i++) {
-                    int id= Integer.parseInt(checkedIds[i]);
-                    Contact contact = new Contact(id);
-                    contactDAO.deleteContact(contact);
-                }
-            }
-            logger.info("Selected contacts deleted");
+            LogicUtility.deleteSelected(checkedIds);
             response.sendRedirect("list");
         } else if (request.getParameter("EmailSelected") != null) {
             // Invoke SecondServlet's job here.
@@ -142,15 +130,6 @@ public class ControllerServlet extends HttpServlet {
         dispatcher.forward(request, response);
     }
 
-    private void showFormPhoto(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException, SQLException {
-        int id = Integer.parseInt(request.getParameter("id"));
-        Contact existingContact = contactDAO.getContact(id);
-        request.setAttribute("contact", existingContact);
-        RequestDispatcher dispatcher = request.getRequestDispatcher("PhotoForm.jsp");
-        dispatcher.forward(request, response);
-    }
-
     private void showSearchForm(HttpServletRequest request, HttpServletResponse response)
         throws ServletException,IOException{
         RequestDispatcher dispatcher = request.getRequestDispatcher("SearchForm.jsp");
@@ -159,39 +138,8 @@ public class ControllerServlet extends HttpServlet {
     }
 
     private void searchContact(HttpServletRequest request, HttpServletResponse response)
-            throws SQLException, IOException, ServletException {
-
-        SearchData data=new SearchData();
-
-        String name = request.getParameter("name");
-        String surname = request.getParameter("surname");
-        String patronymic = request.getParameter("patronymic");
-        String dateAfter = request.getParameter("dateAfter");
-        if (dateAfter.equals("")) dateAfter = null;
-        String dateBefore = request.getParameter("dateBefore");
-        if (dateBefore.equals("")) dateBefore = null;
-        String gender = request.getParameter("gender");
-        String nationality = request.getParameter("nationality");
-        String maritalStatus = request.getParameter("maritalStatus");
-        String country = request.getParameter("country");
-        String city = request.getParameter("city");
-        String address = request.getParameter("address");
-        String zipCode = request.getParameter("zipCode");
-
-        data.setName(name);
-        data.setSurname(surname);
-        data.setAddress(address);
-        data.setCity(city);
-        data.setCountry(country);
-        data.setDateAfter(dateAfter);
-        data.setDateBefore(dateBefore);
-        data.setPatronymic(patronymic);
-        data.setGender(gender);
-        data.setNationality(nationality);
-        data.setMaritalStatus(maritalStatus);
-        data.setZipCode(zipCode);
-
-        List<Contact> listContact = contactDAO.searchContact(data);
+            throws IOException, ServletException {
+        List<Contact> listContact = LogicUtility.initSearchData(request);
         request.setAttribute("listContact", listContact);
         RequestDispatcher dispatcher = request.getRequestDispatcher("ContactList.jsp");
         dispatcher.forward(request, response);
@@ -216,7 +164,6 @@ public class ControllerServlet extends HttpServlet {
 
     private void showNewForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        List<Number> listNumber = new ArrayList<>();
         RequestDispatcher dispatcher = request.getRequestDispatcher("ContactForm.jsp");
         dispatcher.forward(request, response);
     }
@@ -236,94 +183,21 @@ public class ControllerServlet extends HttpServlet {
     }
 
     private void insertContact(HttpServletRequest request, HttpServletResponse response)
-            throws SQLException, IOException {
-        String name = request.getParameter("name");
-        String surname = request.getParameter("surname");
-        String patronymic = request.getParameter("patronymic");
-        String dateOfBirth = null;
-        if(!request.getParameter("dateOfBirth").equals("")) dateOfBirth = request.getParameter("dateOfBirth");
-        String gender = request.getParameter("gender");
-        String nationality = request.getParameter("nationality");
-        String maritalStatus = request.getParameter("maritalStatus");
-        String webSite = request.getParameter("webSite");
-        String email = request.getParameter("email");
-        String workPlace = request.getParameter("workPlace");
-        String country = request.getParameter("country");
-        String city = request.getParameter("city");
-        String address = request.getParameter("address");
-        String zipCode = request.getParameter("zipCode");
-        String base64Image = request.getParameter("image64");
-        if (base64Image.equals("")) base64Image=null;
-
-        Contact newContact = new Contact(name, surname, patronymic, dateOfBirth, gender, nationality,
-                maritalStatus, webSite, email, workPlace, country, city, address, zipCode);
-        newContact.setBase64Image(base64Image);
-        int id = contactDAO.insertContact(newContact);
-
-        List<Number> phones = SaveUtility.getNumbers(request, id);
-        for(Number phone : phones) {
-            contactDAO.insertNumber(phone);
-        }
-
-        List<Attachment> attachments = SaveUtility.getAttachments(request, id);
-        for(Attachment attachment : attachments) {
-            contactDAO.insertAttachment(attachment);
-        }
-
-        logger.info("Inserted contact: "+newContact.getName()+" "+newContact.getSurname());
+            throws IOException {
+        LogicUtility.insertContact(request);
         response.sendRedirect("list");
     }
 
     private void updateContact(HttpServletRequest request, HttpServletResponse response)
-            throws SQLException, IOException {
-        Integer id = Integer.parseInt(request.getParameter("id"));
-        String name = request.getParameter("name");
-        String surname = request.getParameter("surname");
-        String patronymic = request.getParameter("patronymic");
-        String dateOfBirth = request.getParameter("dateOfBirth");
-        if (dateOfBirth.equals("")) dateOfBirth = null;
-        String gender = request.getParameter("gender");
-        String nationality = request.getParameter("nationality");
-        String maritalStatus = request.getParameter("maritalStatus");
-        String webSite = request.getParameter("webSite");
-        String email = request.getParameter("email");
-        String workPlace = request.getParameter("workPlace");
-        String country = request.getParameter("country");
-        String city = request.getParameter("city");
-        String address = request.getParameter("address");
-        String zipCode = request.getParameter("zipCode");
-        String base64Image=request.getParameter("image64");
-        if (base64Image.equals("")) base64Image=null;
-
-
-        Contact contact = new Contact(id, name, surname, patronymic, dateOfBirth, gender, nationality,
-                maritalStatus, webSite, email, workPlace, country, city, address, zipCode);
-        contact.setBase64Image(base64Image);
-        contactDAO.updateContact(contact);
-
-        List<Number> phones = SaveUtility.getNumbers(request, id);
-        contactDAO.deleteNumbers(id);
-        for(Number phone : phones) {
-            contactDAO.insertNumber(phone);
-        }
-
-        List<Attachment> attachments = SaveUtility.getAttachments(request, id);
-        contactDAO.deleteAttachments(id);
-        for(Attachment attachment : attachments) {
-            contactDAO.insertAttachment(attachment);
-        }
-        logger.info("Updated contact: "+contact.getName()+" "+contact.getSurname());
+            throws IOException {
+        LogicUtility.updateContact(request);
         response.sendRedirect("list");
 
     }
 
     private void deleteContact(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, IOException {
-        int id = Integer.parseInt(request.getParameter("id"));
-
-        Contact contact = new Contact(id);
-        contactDAO.deleteContact(contact);
-        logger.info("Deleted contact: "+contact.getName()+" "+contact.getSurname());
+        LogicUtility.deleteContact(request);
         response.sendRedirect("list");
 
     }
