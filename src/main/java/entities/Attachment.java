@@ -1,17 +1,16 @@
 package entities;
 
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Objects;
 
 public class Attachment implements Serializable{
     private Integer id;
     private Integer contactId;
-    @NotNull(message = "name can't be null")
     private String name;
     private String date;
     private String comment;
     private String base64File = null;
+
 
 
     public String getBase64File() {
@@ -54,7 +53,7 @@ public class Attachment implements Serializable{
     }
 
     public void setName(String name) {
-        this.name = name;
+        this.name =name;
     }
 
     public String getDate() {

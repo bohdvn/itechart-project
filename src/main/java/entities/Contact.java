@@ -1,28 +1,22 @@
 package entities;
 
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.io.Serializable;
 import java.util.Objects;
 
 public class Contact implements Serializable {
 
     private Integer id;
-    @NotNull(message = "name can't be null")
     private String name;
-    @NotNull(message = "surname can't be null")
     private String surname;
     private String patronymic;
     private String dateOfBirth;
-    @Pattern(regexp = "^M|F$",
-            message = "incorrect gender format")
     private String gender;
     private String nationality;
     private String maritalStatus;
     private String webSite;
-    @Pattern(regexp = "^(([^<>()\\[\\]\\.,;:\\s@\\\"]+(\\.[^<>()\\[\\]\\.,;:\\s@\\\"]+)*)|(\\\".+\\\"))@(([^<>()[\\]\\.,;:\\s@\\\"]+\\.)+[^<>()[\\]\\.,;:\\s@\\\"]{2,})$",
-            message = "incorrect email format")
     private String email;
     private String workPlace;
     private String country;
@@ -30,6 +24,41 @@ public class Contact implements Serializable {
     private String address;
     private String zipCode;
     private String base64Image = null;
+
+    private String validateName(String name){
+        if(name==null) {
+            throw new IllegalArgumentException("Name cannot be null!");
+        }
+        return name;
+    }
+
+    private String validateSurname(String surname){
+        if(surname==null) {
+            throw new IllegalArgumentException("Surname cannot be null!");
+        }
+        return surname;
+    }
+
+    private String validateGender(String gender){
+        if(!gender.equals("M")&&!gender.equals("F")&&!gender.equals("")) {
+            throw new IllegalArgumentException("Invalid gender format");
+        }
+        return gender;
+    }
+
+    public String validateEmail(String email)
+    {
+        String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\."+
+                "[a-zA-Z0-9_+&*-]+)*@" +
+                "(?:[a-zA-Z0-9-]+\\.)+[a-z" +
+                "A-Z]{2,7}$";
+
+        Pattern pat = Pattern.compile(emailRegex);
+        if ((email == null || !pat.matcher(email).matches())&&!email.equals("")){
+            throw new IllegalArgumentException("Invalid email format");
+        }
+        return email;
+    }
 
     public String getBase64Image() {
         return base64Image;
@@ -41,15 +70,15 @@ public class Contact implements Serializable {
 
     public Contact(Integer id, String name, String surname, String patronymic, String dateOfBirth, String gender, String nationality, String maritalStatus, String webSite, String email, String workPlace, String country, String city, String address, String zipCode) {
         this.id = id;
-        this.name = name;
-        this.surname = surname;
+        this.name = validateName(name);
+        this.surname = validateSurname(surname);
         this.patronymic = patronymic;
         this.dateOfBirth = dateOfBirth;
-        this.gender = gender;
+        this.gender = validateGender(gender);
         this.nationality = nationality;
         this.maritalStatus = maritalStatus;
         this.webSite = webSite;
-        this.email = email;
+        this.email = validateEmail(email);
         this.workPlace = workPlace;
         this.country = country;
         this.city = city;
@@ -58,15 +87,15 @@ public class Contact implements Serializable {
     }
 
     public Contact(String name, String surname, String patronymic, String dateOfBirth, String gender, String nationality, String maritalStatus, String webSite, String email, String workPlace, String country, String city, String address, String zipCode) {
-        this.name = name;
-        this.surname = surname;
+        this.name = validateName(name);
+        this.surname = validateSurname(surname);
         this.patronymic = patronymic;
         this.dateOfBirth = dateOfBirth;
-        this.gender = gender;
+        this.gender = validateGender(gender);
         this.nationality = nationality;
         this.maritalStatus = maritalStatus;
         this.webSite = webSite;
-        this.email = email;
+        this.email = validateEmail(email);
         this.workPlace = workPlace;
         this.country = country;
         this.city = city;
@@ -94,7 +123,7 @@ public class Contact implements Serializable {
     }
 
     public void setName(String name) {
-        this.name = name;
+        this.name = validateName(name);
     }
 
     public String getSurname() {
@@ -102,7 +131,7 @@ public class Contact implements Serializable {
     }
 
     public void setSurname(String surname) {
-        this.surname = surname;
+        this.surname = validateSurname(surname);
     }
 
     public String getPatronymic() {
@@ -126,7 +155,7 @@ public class Contact implements Serializable {
     }
 
     public void setGender(String gender) {
-        this.gender = gender;
+        this.gender = validateGender(gender);
     }
 
     public String getNationality() {
@@ -158,7 +187,7 @@ public class Contact implements Serializable {
     }
 
     public void setEmail(String email) {
-        this.email = email;
+        this.email = validateEmail(email);
     }
 
     public String getWorkPlace() {
