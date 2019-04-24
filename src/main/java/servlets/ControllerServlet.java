@@ -1,9 +1,7 @@
 package servlets;
 
 import DAO.ContactDAO;
-import entities.Attachment;
 import entities.Contact;
-import entities.Number;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import utility.LogicUtility;
@@ -15,7 +13,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -49,85 +46,93 @@ public class ControllerServlet extends HttpServlet {
             throws ServletException, IOException {
         String action = request.getServletPath();
 
-        try {
-            switch (action) {
-                case "/search":
-                    showSearchForm(request, response);
-                    break;
-                case "/find":
-                    searchContact(request, response);
-                    break;
-                case "/new":
-                    showNewForm(request, response);
-                    break;
-                case "/insert":
-                    insertContact(request, response);
-                    break;
-                case "/delete":
-                    deleteContact(request, response);
-                    break;
-                case "/edit":
-                    showEditForm(request, response);
-                    break;
-                case "/update":
-                    updateContact(request, response);
-                    break;
-                case "/email":
-                    showEmailForm(request,response);
-                    break;
-                case "/listActions":
-                    listActions(request, response);
-                    break;
-                default:
-                    listContact(request, response);
-                    break;
-            }
-        } catch (SQLException ex) {
-            logger.error(ex);
-            throw new ServletException(ex);
+        switch (action) {
+            case "/search":
+                showSearchForm(request, response);
+                break;
+            case "/find":
+                searchContact(request, response);
+                break;
+            case "/new":
+                showNewForm(request, response);
+                break;
+            case "/insert":
+                insertContact(request, response);
+                break;
+            case "/delete":
+                deleteContact(request, response);
+                break;
+            case "/edit":
+                showEditForm(request, response);
+                break;
+            case "/update":
+                updateContact(request, response);
+                break;
+            case "/email":
+                showEmailForm(request,response);
+                break;
+            case "/listActions":
+                listActions(request, response);
+                break;
+            default:
+                listContact(request, response);
+                break;
         }
     }
 
     private Logger logger = LogManager.getLogger(ControllerServlet.class);
 
-    private void listActions(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException, SQLException {
+    private void listActions(HttpServletRequest request, HttpServletResponse response) {
         if (request.getParameter("DeleteSelected") != null) {
             // Invoke FirstServlet's job here.
             String[] checkedIds = request.getParameterValues("checked");
             LogicUtility.deleteSelected(checkedIds);
-            response.sendRedirect("list");
+            try {
+                response.sendRedirect("list");
+            } catch (IOException e) {
+                logger.error(e);
+                e.printStackTrace();
+            }
         } else if (request.getParameter("EmailSelected") != null) {
             // Invoke SecondServlet's job here.
             String[] checkedIds = request.getParameterValues("checked");
-            String emails=(contactDAO.getContact(Integer.parseInt(checkedIds[0])).getEmail());
-            String names=(contactDAO.getContact(Integer.parseInt(checkedIds[0])).getName());
-            if (checkedIds != null && checkedIds.length != 0) {
-                for (int i = 1; i < checkedIds.length; i++) {
-                    int id= Integer.parseInt(checkedIds[i]);
-                    Contact existingContact = contactDAO.getContact(id);
-                    emails+=", ";
-                    emails+=existingContact.getEmail();
-                    names+=", ";
-                    names+=existingContact.getName();
+            if (checkedIds==null){
+                try {
+                    response.sendRedirect("list");
+                } catch (IOException e) {
+                    logger.error(e);
+                    e.printStackTrace();
                 }
-                RequestDispatcher dispatcher = request.getRequestDispatcher("EmailForm.jsp");
-                request.setAttribute("emails", emails);
-                request.setAttribute("names", names);
-                dispatcher.forward(request, response);
+            }
+            else {
+                LogicUtility.emailSelected(request);
+                emailForm(request, response);
             }
         }
 
     }
 
-    private void showEmailForm(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException, SQLException {
-        int id = Integer.parseInt(request.getParameter("id"));
-        Contact existingContact = contactDAO.getContact(id);
+    private void emailForm(HttpServletRequest request, HttpServletResponse response) {
         RequestDispatcher dispatcher = request.getRequestDispatcher("EmailForm.jsp");
-        request.setAttribute("emails", existingContact.getEmail());
-        request.setAttribute("names", existingContact.getName());
-        dispatcher.forward(request, response);
+        forward(request, response, dispatcher);
+    }
+
+    private void forward(HttpServletRequest request, HttpServletResponse response, RequestDispatcher dispatcher) {
+        try {
+            dispatcher.forward(request, response);
+        } catch (ServletException e) {
+            logger.error(e);
+            e.printStackTrace();
+        } catch (IOException e) {
+            logger.error(e);
+            e.printStackTrace();
+        }
+    }
+
+    private void showEmailForm(HttpServletRequest request, HttpServletResponse response)
+    {
+        LogicUtility.showEmailForm(request);
+        emailForm(request, response);
     }
 
     private void showSearchForm(HttpServletRequest request, HttpServletResponse response)
@@ -137,68 +142,63 @@ public class ControllerServlet extends HttpServlet {
 
     }
 
-    private void searchContact(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException {
+    private void searchContact(HttpServletRequest request, HttpServletResponse response) {
         List<Contact> listContact = LogicUtility.initSearchData(request);
         request.setAttribute("listContact", listContact);
         RequestDispatcher dispatcher = request.getRequestDispatcher("ContactList.jsp");
-        dispatcher.forward(request, response);
+        forward(request, response, dispatcher);
     }
 
-    private void listContact(HttpServletRequest request, HttpServletResponse response)
-            throws SQLException, IOException, ServletException {
-        int page = 1;
-        int recordsPerPage = 5;
-        if(request.getParameter("page") != null)
-            page = Integer.parseInt(request.getParameter("page"));
-        List<Contact> list = contactDAO.listAllContacts((page-1)*recordsPerPage,
-                recordsPerPage);
-        int noOfRecords = contactDAO.getNoOfRecords();
-        int noOfPages = (int) Math.ceil(noOfRecords * 1.0 / recordsPerPage);
-        request.setAttribute("listContact", list);
-        request.setAttribute("noOfPages", noOfPages);
-        request.setAttribute("currentPage", page);
+    private void listContact(HttpServletRequest request, HttpServletResponse response) {
+        LogicUtility.listContact(request,response);
         RequestDispatcher dispatcher = request.getRequestDispatcher("ContactList.jsp");
-        dispatcher.forward(request, response);
+        forward(request, response, dispatcher);
     }
 
-    private void showNewForm(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    private void showNewForm(HttpServletRequest request, HttpServletResponse response) {
+        showContactForm(request, response);
+    }
+
+    private void showContactForm(HttpServletRequest request, HttpServletResponse response) {
         RequestDispatcher dispatcher = request.getRequestDispatcher("ContactForm.jsp");
-        dispatcher.forward(request, response);
+        forward(request, response, dispatcher);
     }
 
-    private void showEditForm(HttpServletRequest request, HttpServletResponse response)
-            throws SQLException, ServletException, IOException {
-        int id = Integer.parseInt(request.getParameter("id"));
-        Contact existingContact = contactDAO.getContact(id);
-        List<Number> listNumber = contactDAO.listAllNumbers(id);
-        List<Attachment> listAttachment = contactDAO.listAllAttachments(id);
-        RequestDispatcher dispatcher = request.getRequestDispatcher("ContactForm.jsp");
-        request.setAttribute("contact", existingContact);
-        request.setAttribute("phones", listNumber);
-        request.setAttribute("listAttachment", listAttachment);
-        dispatcher.forward(request, response);
+    private void showEditForm(HttpServletRequest request, HttpServletResponse response) {
+        LogicUtility.showEditForm(request);
+        showContactForm(request, response);
 
     }
 
-    private void insertContact(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
+    private void insertContact(HttpServletRequest request, HttpServletResponse response) {
         LogicUtility.insertContact(request);
-        response.sendRedirect("list");
+        try {
+            response.sendRedirect("list");
+        } catch (IOException e) {
+            logger.error(e);
+            e.printStackTrace();
+        }
     }
 
-    private void updateContact(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
+    private void updateContact(HttpServletRequest request, HttpServletResponse response) {
         LogicUtility.updateContact(request);
-        response.sendRedirect("list");
+        try {
+            response.sendRedirect("list");
+        } catch (IOException e) {
+            logger.error(e);
+            e.printStackTrace();
+        }
 
     }
 
-    private void deleteContact(HttpServletRequest request, HttpServletResponse response)
-            throws SQLException, IOException {
+    private void deleteContact(HttpServletRequest request, HttpServletResponse response) {
         LogicUtility.deleteContact(request);
-        response.sendRedirect("list");
+        try {
+            response.sendRedirect("list");
+        } catch (IOException e) {
+            logger.error(e);
+            e.printStackTrace();
+        }
 
     }
 }

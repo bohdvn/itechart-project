@@ -9,15 +9,16 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
 public class LogicUtility {
-    private static final Logger LOGGER = Logger.getLogger("user_action_logger");
 
-    static String jdbcURL = "jdbc:mysql://localhost:3306/users?useUnicode=true&characterEncoding=utf8&useLegacyDatetimeCode=false&serverTimezone=UTC";
-    static String jdbcUsername = "root";
-    static String jdbcPassword = "password";
+    private static String jdbcURL = "jdbc:mysql://localhost:3306/users?useUnicode=true&characterEncoding=utf8&useLegacyDatetimeCode=false&serverTimezone=UTC";
+    private static String jdbcUsername = "root";
+    private static String jdbcPassword = "password";
     private static ContactDAO contactDAO = new ContactDAO(jdbcURL, jdbcUsername, jdbcPassword);
 
     private static Logger logger = LogManager.getLogger(LogicUtility.class);
@@ -30,6 +31,7 @@ public class LogicUtility {
                 try {
                     contactDAO.deleteContact(contact);
                 } catch (SQLException e) {
+                    logger.error(e);
                     e.printStackTrace();
                 }
             }
@@ -110,14 +112,7 @@ public class LogicUtility {
         }
 
         List<Number> phones = SaveUtility.getNumbers(request, id);
-        for(Number phone : phones) {
-            try {
-                contactDAO.insertNumber(phone);
-            } catch (SQLException e) {
-                logger.error(e);
-                e.printStackTrace();
-            }
-        }
+        initNumbers(phones);
 
         List<Attachment> attachments = SaveUtility.getAttachments(request, id);
         for(Attachment attachment : attachments) {
@@ -170,14 +165,7 @@ public class LogicUtility {
             logger.error(e);
             e.printStackTrace();
         }
-        for(Number phone : phones) {
-            try {
-                contactDAO.insertNumber(phone);
-            } catch (SQLException e) {
-                logger.error(e);
-                e.printStackTrace();
-            }
-        }
+        initNumbers(phones);
 
         List<Attachment> attachments = SaveUtility.getAttachments(request, id);
         try {
@@ -196,6 +184,17 @@ public class LogicUtility {
         logger.info("Updated contact: "+contact.getName()+" "+contact.getSurname());
     }
 
+    private static void initNumbers(List<Number> phones) {
+        for(Number phone : phones) {
+            try {
+                contactDAO.insertNumber(phone);
+            } catch (SQLException e) {
+                logger.error(e);
+                e.printStackTrace();
+            }
+        }
+    }
+
     public static void deleteContact (HttpServletRequest request) {
         int id = Integer.parseInt(request.getParameter("id"));
 
@@ -207,5 +206,115 @@ public class LogicUtility {
             e.printStackTrace();
         }
         logger.info("Deleted contact: "+contact.getName()+" "+contact.getSurname());
+    }
+
+    public static void listContact (HttpServletRequest request, HttpServletResponse response){
+        int page = 1;
+        int recordsPerPage = 5;
+        if(request.getParameter("page") != null)
+            page = Integer.parseInt(request.getParameter("page"));
+        List<Contact> list = null;
+        try {
+            list = contactDAO.listAllContacts((page-1)*recordsPerPage,
+                    recordsPerPage);
+        } catch (SQLException e) {
+            logger.error(e);
+            e.printStackTrace();
+        }
+        int noOfRecords = contactDAO.getNoOfRecords();
+        int noOfPages = (int) Math.ceil(noOfRecords * 1.0 / recordsPerPage);
+        request.setAttribute("listContact", list);
+        request.setAttribute("noOfPages", noOfPages);
+        request.setAttribute("currentPage", page);
+    }
+    public static void emailSelected (HttpServletRequest request) {
+        String[] checkedIds = request.getParameterValues("checked");
+        String emails = null;
+        try {
+            emails = (contactDAO.getContact(Integer.parseInt(checkedIds[0])).getEmail());
+        } catch (SQLException e) {
+            logger.error(e);
+            e.printStackTrace();
+        } catch (IOException e) {
+            logger.error(e);
+            e.printStackTrace();
+        }
+        String names = null;
+        try {
+            names = (contactDAO.getContact(Integer.parseInt(checkedIds[0])).getName());
+        } catch (SQLException e) {
+            logger.error(e);
+            e.printStackTrace();
+        } catch (IOException e) {
+            logger.error(e);
+            e.printStackTrace();
+        }
+        if (checkedIds != null && checkedIds.length != 0) {
+            for (int i = 1; i < checkedIds.length; i++) {
+                int id = Integer.parseInt(checkedIds[i]);
+                Contact existingContact = null;
+                try {
+                    existingContact = contactDAO.getContact(id);
+                } catch (SQLException e) {
+                    logger.error(e);
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    logger.error(e);
+                    e.printStackTrace();
+                }
+                emails += ", ";
+                emails += existingContact.getEmail();
+                names += ", ";
+                names += existingContact.getName();
+            }
+            request.setAttribute("emails", emails);
+            request.setAttribute("names", names);
+        }
+    }
+    public static void showEmailForm (HttpServletRequest request) {
+        int id = Integer.parseInt(request.getParameter("id"));
+        Contact existingContact = null;
+        try {
+            existingContact = contactDAO.getContact(id);
+        } catch (SQLException e) {
+            logger.error(e);
+            e.printStackTrace();
+        } catch (IOException e) {
+            logger.error(e);
+            e.printStackTrace();
+        }
+        request.setAttribute("emails", existingContact.getEmail());
+        request.setAttribute("names", existingContact.getName());
+    }
+    public static void showEditForm (HttpServletRequest request){
+
+        int id = Integer.parseInt(request.getParameter("id"));
+        Contact existingContact = null;
+        try {
+            existingContact = contactDAO.getContact(id);
+        } catch (SQLException e) {
+            logger.error(e);
+            e.printStackTrace();
+        } catch (IOException e) {
+            logger.error(e);
+            e.printStackTrace();
+        }
+        List<Number> listNumber = null;
+        try {
+            listNumber = contactDAO.listAllNumbers(id);
+        } catch (SQLException e) {
+            logger.error(e);
+            e.printStackTrace();
+        }
+        List<Attachment> listAttachment = null;
+        try {
+            listAttachment = contactDAO.listAllAttachments(id);
+        } catch (SQLException e) {
+            logger.error(e);
+            e.printStackTrace();
+        }
+        request.setAttribute("contact", existingContact);
+        request.setAttribute("phones", listNumber);
+        request.setAttribute("listAttachment", listAttachment);
     }
 }
